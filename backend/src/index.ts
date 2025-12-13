@@ -14,7 +14,10 @@ dotenv.config();
 
 const server = fastify({ logger: true });
 
-server.register(cors);
+server.register(cors, {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+});
 server.register(multipart);
 server.register(fjwt, {
     secret: process.env.JWT_SECRET || 'supersecret'
@@ -49,7 +52,7 @@ server.get<{ Params: { filename: string }, Querystring: { token?: string } }>('/
     }
 
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-    return reply.status(400).send({ message: 'Invalid filename' });
+        return reply.status(400).send({ message: 'Invalid filename' });
     }
 
     return reply.sendFile(filename, path.join(__dirname, '../uploads'));
