@@ -8,7 +8,11 @@
     "start": "node dist/server.js",
     "migrate": "ts-node src/migrate.ts",
     "setup-db": "ts-node src/setup_db.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=__tests__/(models|services)",
+    "test:integration": "jest --testPathPattern=__tests__/integration",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -29,9 +33,14 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.0.1",
     "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
