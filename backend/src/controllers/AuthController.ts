@@ -1,53 +1,27 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import bcrypt from 'bcrypt';
-import { UserModel } from '../models/UserModel';
 import { IRegisterBody, ILoginBody } from '../types/requests';
+import { AuthService } from '../services/AuthService';
 
 export class AuthController {
     static async register(request: FastifyRequest<{ Body: IRegisterBody }>, reply: FastifyReply) {
-        const { email, password, role } = request.body;
-
-        if (!email || !password || !role) {
-            return reply.status(400).send({ message: 'Missing fields' });
-        }
-
-        if (!['ARTIST', 'ADMIN'].includes(role)) {
-            return reply.status(400).send({ message: 'Invalid role' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
+        const authService = new AuthService(request.server.jwt);
         try {
-            const user = await UserModel.create(email, hashedPassword, role);
-            const token = request.server.jwt.sign({ id: user.id, email: user.email, role: user.role });
-
-            return { token, user };
-        } catch (err) {
-            const error = err as { code?: string };
-            if (error.code === '23505') { // Unique violation
-                return reply.status(409).send({ message: 'Email already exists' });
-            }
+            return await authService.register(request.body);
+        } catch (err: any) {
             request.server.log.error(err);
-            return reply.status(500).send({ message: 'Internal Server Error' });
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
         }
     }
 
     static async login(request: FastifyRequest<{ Body: ILoginBody }>, reply: FastifyReply) {
-        const { email, password } = request.body;
-
+        const authService = new AuthService(request.server.jwt);
         try {
-            const user = await UserModel.findByEmail(email);
-
-            if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-                return reply.status(401).send({ message: 'Invalid credentials' });
-            }
-
-            const token = request.server.jwt.sign({ id: user.id, email: user.email, role: user.role });
-
-            return { token, user: { id: user.id, email: user.email, role: user.role } };
-        } catch (err) {
+            return await authService.login(request.body);
+        } catch (err: any) {
             request.server.log.error(err);
-            return reply.status(500).send({ message: 'Internal Server Error' });
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
         }
     }
 }

@@ -1,31 +1,18 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { ReleaseModel } from '../models/ReleaseModel';
-import { TrackModel } from '../models/TrackModel';
-import { storage } from '../services/storage';
 import { ICreateReleaseBody, IFileUploadRequest, IReleaseParams, IUpdateReleaseStatusBody } from '../types/requests';
-
-// In-memory queue simulation helper
-async function processRelease(releaseId: number) {
-    console.log(`Processing release ${releaseId}...`);
-    await new Promise(resolve => setTimeout(resolve, 10000)); // 10s delay
-
-    await ReleaseModel.updateStatus(releaseId, 'PENDING_REVIEW');
-    console.log(`Release ${releaseId} processed. Ready for review.`);
-}
+import { ReleaseService } from '../services/ReleaseService';
 
 export class ReleaseController {
+    private static releaseService = new ReleaseService();
+
     static async list(request: FastifyRequest, reply: FastifyReply) {
-        //NOTE: Authenticate decorator attaches user, but TypeScript needs declaration merging or assertion
         const { id, role } = request.user;
-        const filters = role === 'ARTIST' ? { artistId: id } : {};
-        return await ReleaseModel.findAll(filters);
+        return await ReleaseController.releaseService.list({ id, role });
     }
 
     static async createDraft(request: FastifyRequest<{ Body: ICreateReleaseBody }>, reply: FastifyReply) {
-        const { title, genre, cover_url } = request.body;
-        const artist_id = request.user.id;
-
-        return await ReleaseModel.create({ artist_id, title, genre, cover_url });
+        const user = { id: request.user.id };
+        return await ReleaseController.releaseService.createDraft(user, request.body);
     }
 
     static async uploadTrack(request: IFileUploadRequest & FastifyRequest<{ Params: IReleaseParams }>, reply: FastifyReply) {
@@ -36,60 +23,57 @@ export class ReleaseController {
             return reply.status(400).send({ message: 'No file uploaded' });
         }
 
-        const url = await storage.upload(data, 'tracks');
-
-        //TODO: Extract metadata (duration, isrc) using a library like music-metadata
-        //TODO: filemname sanitization
-        const title = data.filename; // Simple title from filename
-
-        return await TrackModel.create({
-            release_id: releaseId,
-            title,
-            audio_url: url,
-            duration: 180, // Mock duration
-            isrc: 'US1234567890' // Mock ISRC
-        });
+        try {
+            return await ReleaseController.releaseService.uploadTrack(releaseId, data);
+        } catch (err: any) {
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
+        }
     }
 
     static async submit(request: FastifyRequest<{ Params: IReleaseParams }>, reply: FastifyReply) {
         const releaseId = parseInt(request.params.id);
 
-        const release = await ReleaseModel.updateStatus(releaseId, 'PROCESSING');
-        if (!release) return reply.status(404).send();
-
-        // Trigger async processing
-        //TODO : Create a separate service
-        processRelease(releaseId);
-
-        return release;
+        try {
+            return await ReleaseController.releaseService.submit(releaseId);
+        } catch (err: any) {
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
+        }
     }
 
     static async review(request: FastifyRequest<{ Body: IUpdateReleaseStatusBody, Params: IReleaseParams }>, reply: FastifyReply) {
-        const { status } = request.body;
         const releaseId = parseInt(request.params.id);
+        const user = { role: request.user.role };
 
-        if (request.user.role !== 'ADMIN') {
-            return reply.status(403).send({ message: 'Admin only' });
+        try {
+            return await ReleaseController.releaseService.review(user, releaseId, request.body);
+        } catch (err: any) {
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
         }
-
-        return await ReleaseModel.updateStatus(releaseId, status);
     }
 
     static async getDetails(request: FastifyRequest<{ Params: IReleaseParams }>, reply: FastifyReply) {
         const releaseId = parseInt(request.params.id);
 
-        const release = await ReleaseModel.findById(releaseId);
-        if (!release) return reply.status(404).send();
-
-        const tracks = await TrackModel.findByReleaseId(releaseId);
-
-        return { ...release, tracks };
+        try {
+            return await ReleaseController.releaseService.getDetails(releaseId);
+        } catch (err: any) {
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
+        }
     }
 
     static async uploadCover(request: IFileUploadRequest, reply: FastifyReply) {
         const data = await request.file();
         if (!data) return reply.status(400).send({ message: 'No file' });
-        const url = await storage.upload(data, 'covers');
-        return { url };
+
+        try {
+            return await ReleaseController.releaseService.uploadCover(data);
+        } catch (err: any) {
+            const status = err.status || 500;
+            return reply.status(status).send({ message: err.message || 'Internal Server Error' });
+        }
     }
 }

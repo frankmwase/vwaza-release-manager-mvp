@@ -1,4 +1,4 @@
-import fastify from 'fastify';
+import fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import dotenv from 'dotenv';
 import cors from '@fastify/cors';
 import fjwt from '@fastify/jwt';
@@ -9,7 +9,6 @@ import rateLimit from '@fastify/rate-limit'; // Rate Limiting
 import { db } from './db';
 import { authRoutes } from './routes/auth';
 import { releaseRoutes } from './routes/releases';
-import { log } from 'console';
 
 dotenv.config();
 
@@ -77,7 +76,7 @@ server.get<{ Params: { filename: string }, Querystring: { token?: string } }>('/
     return reply.sendFile(filename, path.join(__dirname, '../uploads'));
 });
 
-import { FastifyRequest, FastifyReply } from 'fastify';
+
 
 server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
