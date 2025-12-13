@@ -1,6 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { apiFetch, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: (string | undefined | null | false)[]) {
+    return twMerge(clsx(inputs));
+}
+
+const COLUMNS = [
+    { id: 'PENDING_REVIEW', label: 'Review Queue', color: 'bg-blue-100 text-blue-800', border: 'border-blue-200' },
+    { id: 'PUBLISHED', label: 'Published', color: 'bg-green-100 text-green-800', border: 'border-green-200' },
+    { id: 'REJECTED', label: 'Rejected', color: 'bg-red-100 text-red-800', border: 'border-red-200' },
+];
 
 export default function AdminDashboard() {
     const [releases, setReleases] = useState<any[]>([]);
@@ -18,98 +31,213 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         fetchReleases();
+        const interval = setInterval(fetchReleases, 5000);
+        return () => clearInterval(interval);
     }, []);
+
+    const groupedReleases = useMemo(() => {
+        const groups: Record<string, any[]> = {};
+        COLUMNS.forEach(c => groups[c.id] = []);
+        releases.forEach(r => {
+            if (groups[r.status]) groups[r.status].push(r);
+        });
+        return groups;
+    }, [releases]);
 
     const handleReview = async (id: number, status: 'PUBLISHED' | 'REJECTED') => {
         try {
+            // Optimistic update
+            const updatedReleases = releases.map(r => r.id === id ? { ...r, status } : r);
+            setReleases(updatedReleases);
+            setSelectedRelease(null); // Close modal immediately
+
             await apiFetch(`/releases/${id}/review`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
             });
-            fetchReleases();
-            setSelectedRelease(null);
+            fetchReleases(); // Re-fetch to ensure sync
         } catch (err) {
             alert('Action failed');
+            fetchReleases(); // Revert on failure
         }
     };
 
-    const loadReleaseDetails = async (id: number) => {
+    const loadReleaseDetails = async (release: any) => {
+        // Use cached data for immediate open, then fetch full details (tracks)
+        setSelectedRelease(release);
         try {
-            const data = await apiFetch(`/releases/${id}`);
+            const data = await apiFetch(`/releases/${release.id}`);
             setSelectedRelease(data);
         } catch (err) {
             console.error(err);
         }
     };
 
-    const pendingReleases = releases.filter(r => r.status === 'PENDING_REVIEW');
-
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
-            <nav className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center text-white">
-                <h1 className="text-xl font-bold dark:text-white text-gray-900">Vwaza Admin</h1>
-                <button onClick={logout} className="text-red-600 hover:text-red-800">Logout</button>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col font-sans">
+            {/* Navbar */}
+            <nav className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center z-10">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
+                    <h1 className="text-xl font-bold tracking-tight">Vwaza Admin</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-500">Admin Mode</span>
+                    <button onClick={logout} className="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-900/10 px-3 py-1.5 rounded-full transition">Logout</button>
+                </div>
             </nav>
 
-            <div className="flex">
-                {/* Sidebar List */}
-                <aside className="w-1/3 border-r h-[calc(100vh-64px)] overflow-y-auto bg-white dark:bg-gray-800">
-                    <div className="p-4 font-bold border-b">Review Queue ({pendingReleases.length})</div>
-                    {pendingReleases.map(r => (
-                        <div key={r.id} onClick={() => loadReleaseDetails(r.id)} className={`p-4 border-b cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${selectedRelease?.id === r.id ? 'bg-indigo-50 dark:bg-gray-700' : ''}`}>
-                            <h3 className="font-bold">{r.title}</h3>
-                            <p className="text-sm text-gray-500">{r.genre}</p>
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded">Pending Review</span>
+            {/* Stats Header */}
+            <header className="px-8 py-6">
+                <h2 className="text-2xl font-bold mb-6">Dashboard Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {COLUMNS.map(col => (
+                        <div key={col.id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-gray-500 font-medium mb-1">{col.label}</p>
+                                <p className="text-3xl font-bold">{(groupedReleases[col.id] || []).length}</p>
+                            </div>
+                            <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-xl", col.color)}>
+                                {col.id === 'PENDING_REVIEW' && '⏳'}
+                                {col.id === 'PUBLISHED' && '✅'}
+                                {col.id === 'REJECTED' && '❌'}
+                            </div>
                         </div>
                     ))}
-                    {pendingReleases.length === 0 && <div className="p-4 text-gray-500">No pending releases.</div>}
+                </div>
+            </header>
 
-                    <div className="p-4 font-bold border-b mt-8">Other Releases</div>
-                    {releases.filter(r => r.status !== 'PENDING_REVIEW').map(r => (
-                        <div key={r.id} className="p-4 border-b opacity-50">
-                            <h3 className="font-bold">{r.title}</h3>
-                            <span className="text-xs bg-gray-100 text-gray-800 px-2 rounded">{r.status}</span>
-                        </div>
-                    ))}
-                </aside>
-
-                {/* Main Content */}
-                <main className="w-2/3 p-8">
-                    {selectedRelease ? (
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded shadow">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-3xl font-bold mb-2">{selectedRelease.title}</h2>
-                                    <p className="text-gray-600 dark:text-gray-300 mb-4">Genre: {selectedRelease.genre}</p>
-                                </div>
-                                {selectedRelease.cover_url && <img src={getMediaUrl(selectedRelease.cover_url)} className="w-32 h-32 object-cover rounded" />}
+            {/* Kanban Board */}
+            <main className="flex-1 overflow-x-auto overflow-y-hidden px-8 pb-8">
+                <div className="h-full flex gap-8 min-w-[1000px]">
+                    {COLUMNS.map(col => (
+                        <div key={col.id} className="flex-1 flex flex-col h-full bg-gray-100/50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
+                            <div className="flex items-center justify-between mb-4 px-2">
+                                <h3 className="font-bold text-gray-700 dark:text-gray-200">{col.label}</h3>
+                                <span className={cn("text-xs px-2 py-1 rounded-full font-bold", col.color)}>
+                                    {(groupedReleases[col.id] || []).length}
+                                </span>
                             </div>
 
-                            <div className="mt-8">
-                                <h3 className="text-xl font-bold mb-4">Tracks</h3>
-                                <div className="space-y-4">
+                            <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-2">
+                                <AnimatePresence mode="popLayout">
+                                    {(groupedReleases[col.id] || []).map((release: any) => (
+                                        <motion.div
+                                            layout
+                                            layoutId={`card-${release.id}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            key={release.id}
+                                            onClick={() => loadReleaseDetails(release)}
+                                            className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow group"
+                                            whileHover={{ y: -2 }}
+                                        >
+                                            <div className="flex gap-4">
+                                                {release.cover_url ? (
+                                                    <img src={getMediaUrl(release.cover_url)} className="w-16 h-16 rounded-lg object-cover bg-gray-200" />
+                                                ) : (
+                                                    <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl">🎵</div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-bold truncate text-gray-900 dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">{release.title}</h4>
+                                                    <p className="text-sm text-gray-500 truncate">{release.genre}</p>
+                                                    <p className="text-xs text-gray-400 mt-2">{new Date(release.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                                {(groupedReleases[col.id] || []).length === 0 && (
+                                    <div className="h-32 flex items-center justify-center text-gray-400 text-sm italic border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                                        No releases
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
+
+            {/* Review Modal */}
+            <AnimatePresence>
+                {selectedRelease && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setSelectedRelease(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="relative h-48 bg-gray-900">
+                                {selectedRelease.cover_url && (
+                                    <>
+                                        <img src={getMediaUrl(selectedRelease.cover_url)} className="w-full h-full object-cover opacity-50 blur-lg" />
+                                        <img src={getMediaUrl(selectedRelease.cover_url)} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-40 w-40 object-cover rounded shadow-lg z-10" />
+                                    </>
+                                )}
+                                <button
+                                    onClick={() => setSelectedRelease(null)}
+                                    className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full p-1"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="p-8">
+                                <div className="text-center mb-8">
+                                    <h2 className="text-2xl font-bold mb-2">{selectedRelease.title}</h2>
+                                    <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                                        {selectedRelease.genre}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-4 mb-8 max-h-60 overflow-y-auto custom-scrollbar">
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tracks</h3>
                                     {selectedRelease.tracks?.map((t: any) => (
-                                        <div key={t.id} className="border p-3 rounded flex items-center justify-between">
-                                            <span>{t.title}</span>
-                                            <audio controls src={getMediaUrl(t.audio_url)} className="h-8" />
+                                        <div key={t.id} className="bg-gray-50 dark:bg-gray-750 p-3 rounded-lg flex items-center justify-between group hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                                            <span className="font-medium text-sm">{t.title}</span>
+                                            <audio controls src={getMediaUrl(t.audio_url)} className="h-8 w-32" />
                                         </div>
                                     ))}
+                                    {(!selectedRelease.tracks || selectedRelease.tracks.length === 0) && (
+                                        <p className="text-gray-500 text-sm italic">No tracks available.</p>
+                                    )}
                                 </div>
-                            </div>
 
-                            <div className="mt-10 flex gap-4 pt-6 border-t">
-                                <button onClick={() => handleReview(selectedRelease.id, 'PUBLISHED')} className="bg-green-600 text-white px-6 py-2 rounded text-lg font-bold hover:bg-green-700">Approve & Publish</button>
-                                <button onClick={() => handleReview(selectedRelease.id, 'REJECTED')} className="bg-red-600 text-white px-6 py-2 rounded text-lg font-bold hover:bg-red-700">Reject</button>
+                                {selectedRelease.status === 'PENDING_REVIEW' ? (
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            onClick={() => handleReview(selectedRelease.id, 'REJECTED')}
+                                            className="py-3 px-4 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 transition-colors"
+                                        >
+                                            Reject
+                                        </button>
+                                        <button
+                                            onClick={() => handleReview(selectedRelease.id, 'PUBLISHED')}
+                                            className="py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-1"
+                                        >
+                                            Approve & Publish
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                        <p className="text-sm text-gray-500">Status: <span className="font-bold text-gray-900 dark:text-white">{selectedRelease.status}</span></p>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    ) : (
-                        <div className="h-full flex items-center justify-center text-gray-500">
-                            Select a release to review
-                        </div>
-                    )}
-                </main>
-            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

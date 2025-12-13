@@ -103,7 +103,11 @@ export default function ReleaseWizard() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6">
-            <div className="bg-white dark:bg-gray-800 w-full max-w-2xl p-8 rounded-lg shadow-lg">
+            <div className="bg-white dark:bg-gray-800 w-full max-w-2xl p-8 rounded-lg shadow-lg relative">
+                <button onClick={() => navigate('/artist')} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    ✕ Dashboard
+                </button>
+
                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Create New Release - Step {step}/3</h2>
 
                 {step === 1 && (
@@ -123,7 +127,10 @@ export default function ReleaseWizard() {
                             )}
                             <input type="file" accept="image/*" className="w-full mt-1 dark:text-gray-300" onChange={e => setCoverFile(e.target.files?.[0] || null)} />
                         </div>
-                        <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Next: Upload Tracks</button>
+                        <div className="flex justify-end gap-2">
+                            <button type="button" onClick={() => navigate('/artist')} className="text-gray-500 hover:text-gray-700 px-4 py-2">Cancel</button>
+                            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Next: Upload Tracks</button>
+                        </div>
                     </form>
                 )}
 
@@ -149,7 +156,7 @@ export default function ReleaseWizard() {
                         </div>
 
                         <div className="flex justify-between mt-6">
-                            <button disabled className="text-gray-400">Back</button>
+                            <button onClick={() => setStep(1)} className="text-gray-500 hover:text-gray-700 px-4 py-2 border rounded">Back</button>
                             <button onClick={() => setStep(3)} disabled={tracks.length === 0} className="bg-indigo-600 text-white px-4 py-2 rounded disabled:opacity-50">Next: Review</button>
                         </div>
                     </div>
@@ -168,9 +175,12 @@ export default function ReleaseWizard() {
 
                         <p className="mt-4 text-sm text-gray-500">Upon submission, your release will be processed (simulated transcoding) and then sent for review.</p>
 
-                        <button onClick={handleSubmitRelease} className="w-full bg-indigo-600 text-white py-3 rounded text-lg font-bold hover:bg-indigo-700 mt-6">
-                            Submit Release
-                        </button>
+                        <div className="flex justify-between mt-6">
+                            <button onClick={() => setStep(2)} className="text-gray-500 hover:text-gray-700 px-4 py-2 border rounded">Back</button>
+                            <button onClick={handleSubmitRelease} className="bg-indigo-600 text-white px-6 py-2 rounded text-lg font-bold hover:bg-indigo-700">
+                                Submit Release
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
