@@ -22,6 +22,8 @@ I have provided an automated setup script to install dependencies and initialize
 
         ```
         *(Adjust `postgres:password` to your local DB credentials)*.
+        
+        *(Adjust `cloudinary://<cloudinary_api_key>:<cloudinary_api_secret>@<cloudinary_api_name>` for your cloudinary link)*.
 3.  **Run Setup**:
     ```bash
     npm run setup

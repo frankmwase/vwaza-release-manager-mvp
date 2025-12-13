@@ -30,10 +30,10 @@ export class ReleaseModel {
         return result.rows[0];
     }
 
-    static async updateStatus(id: number, status: string): Promise<IRelease | null> {
+    static async updateStatus(id: number, status: string, reject_reason?: string): Promise<IRelease | null> {
         const result = await db.query(
-            'UPDATE releases SET status = $1 WHERE id = $2 RETURNING *',
-            [status, id]
+            'UPDATE releases SET status = $1, reject_reason = $2 WHERE id = $3 RETURNING *',
+            [status, reject_reason || null, id]
         );
         return result.rows[0] || null;
     }

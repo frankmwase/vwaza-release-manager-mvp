@@ -63,13 +63,13 @@ export class ReleaseService implements IReleaseService {
     }
 
     async review(user: { role: string }, releaseId: number, body: IUpdateReleaseStatusBody) {
-        const { status } = body;
+        const { status, reject_reason } = body;
 
         if (user.role !== 'ADMIN') {
             throw { status: 403, message: 'Admin only' };
         }
 
-        return await ReleaseModel.updateStatus(releaseId, status);
+        return await ReleaseModel.updateStatus(releaseId, status, reject_reason);
     }
 
     async getDetails(releaseId: number) {

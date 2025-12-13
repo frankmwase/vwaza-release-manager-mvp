@@ -68,6 +68,13 @@ export default function ReleaseDetails() {
                             )}
                         </div>
 
+                        {release.status === 'REJECTED' && release.reject_reason && (
+                            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-900">
+                                <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">Rejection Feedback</h3>
+                                <p className="text-gray-700 dark:text-gray-300">{release.reject_reason}</p>
+                            </div>
+                        )}
+
                         {isDraft && (
                             <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-900">
                                 <p className="mb-4">This release is still in draft mode.</p>

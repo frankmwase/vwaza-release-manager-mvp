@@ -19,6 +19,7 @@ export interface ICreateReleaseBody {
 
 export interface IUpdateReleaseStatusBody {
     status: 'PUBLISHED' | 'REJECTED';
+    reject_reason?: string;
 }
 
 export interface IReleaseParams {
