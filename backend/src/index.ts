@@ -21,6 +21,18 @@ server.register(rateLimit, {
     timeWindow: '1 minute'
 });
 
+server.setErrorHandler((error: any, request, reply) => {
+    server.log.error(error);
+    const statusCode = error.statusCode || 500;
+    const message = error.validation ? 'Validation Error' : error.message || 'Internal Server Error';
+    reply.status(statusCode).send({
+        status: 'error',
+        code: statusCode,
+        message,
+        details: error.validation // specific for schema validation errors
+    });
+});
+
 server.register(cors, {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']

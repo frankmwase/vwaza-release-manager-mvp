@@ -20,17 +20,42 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         delete (headers as any)['Content-Type'];
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers,
+        });
 
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Request failed' }));
-        throw new Error(error.message || response.statusText);
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { message: 'Request failed' };
+            }
+
+            const message = errorData.message || response.statusText;
+
+            // Dispatch global error event for the Toast system
+            window.dispatchEvent(new CustomEvent('vwaza-toast', {
+                detail: { message, type: 'error' }
+            }));
+
+            throw new Error(message);
+        }
+
+        if (response.status === 204) return;
+        return response.json();
+
+    } catch (err: any) {
+        // Handle network errors (where fetch throws)
+        if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+            window.dispatchEvent(new CustomEvent('vwaza-toast', {
+                detail: { message: 'Network connection error', type: 'error' }
+            }));
+        }
+        throw err;
     }
-
-    return response.json();
 }
 
 
