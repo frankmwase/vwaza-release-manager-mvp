@@ -5,6 +5,7 @@ import fjwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import path from 'path';
 import fastifyStatic from '@fastify/static';
+import rateLimit from '@fastify/rate-limit'; // Rate Limiting
 import { db } from './db';
 import { authRoutes } from './routes/auth';
 import { releaseRoutes } from './routes/releases';
@@ -13,6 +14,12 @@ import { log } from 'console';
 dotenv.config();
 
 const server = fastify({ logger: true });
+
+// Rate Limiting: 100 requests per minute
+server.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute'
+});
 
 server.register(cors, {
     origin: '*',
