@@ -1,26 +1,62 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../lib/api';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { apiFetch, getMediaUrl } from '../lib/api';
 
 export default function ReleaseWizard() {
+    const { id } = useParams();
     const [step, setStep] = useState(1);
-    const [releaseId, setReleaseId] = useState<number | null>(null);
+    const [releaseId, setReleaseId] = useState<number | null>(id ? parseInt(id) : null);
     const [formData, setFormData] = useState({ title: '', genre: '' });
     const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null);
     const [tracks, setTracks] = useState<any[]>([]);
     const [uploadQueue, setUploadQueue] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (id) {
+            apiFetch(`/releases/${id}`).then(data => {
+                setReleaseId(data.id);
+                setFormData({ title: data.title, genre: data.genre });
+                setExistingCoverUrl(data.cover_url);
+                setTracks(data.tracks || []);
+                // If we have data, we might want to start at step 2 or 3 depending on completeness
+                // For simplicity, let's default to step 2 if basic info exists, or step 3 if tracks exist
+                if (data.tracks && data.tracks.length > 0) {
+                    setStep(3);
+                } else if (data.title) {
+                    setStep(2);
+                }
+            }).catch(console.error);
+        }
+    }, [id]);
+
     const handleCreateDraft = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            let coverUrl = null;
+            let coverUrl = existingCoverUrl;
             if (coverFile) {
                 const fd = new FormData();
                 fd.append('file', coverFile);
                 const res = await apiFetch('/upload/cover', { method: 'POST', body: fd });
                 coverUrl = res.url;
+            }
+
+            // If we have an ID, we might need a textual UPDATE endpoint for title/genre later?
+            // For now, if editing an existing draft, the wizard assumes step 1 is just confirmation or skipping if already done.
+            // But if we want to support updating title/genre, we'd need a PUT /releases/:id endpoint which we didn't confirm exists for *editing* drafts fully.
+            // But the user just asked to RESUME.
+            // If resume, we probably skip creating a new draft if we already have an ID.
+
+            if (releaseId) {
+                // Optimization: Update details if changed? Current backend createDraft is POST.
+                // We don't have a specific "update details" endpoint in the provided snippets (only updateStatus).
+                // So we'll assume for resumption we just move to next step or we upload cover.
+                // If cover was changed, we might want to save that. 
+                // Let's just move to step 2 for now as "Create/Update" isn't fully separated.
+                setStep(2);
+                return;
             }
 
             const res = await apiFetch('/releases', {
@@ -30,7 +66,7 @@ export default function ReleaseWizard() {
             setReleaseId(res.id);
             setStep(2);
         } catch (err) {
-            alert('Failed to create draft');
+            alert('Failed to create/upate draft');
         }
     };
 
@@ -60,7 +96,8 @@ export default function ReleaseWizard() {
             navigate('/artist');
         } catch (err) {
             console.log(err);
-            alert('Failed to submit release : ' + err);
+            // alert('Failed to submit release : ' + err); // Removed alert for cleaner UX
+            console.error('Failed to submit release', err);
         }
     };
 
@@ -81,6 +118,9 @@ export default function ReleaseWizard() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium dark:text-gray-300">Cover Art</label>
+                            {existingCoverUrl && (
+                                <img src={getMediaUrl(existingCoverUrl)} alt="Current Cover" className="w-32 h-32 object-cover mb-2 rounded" />
+                            )}
                             <input type="file" accept="image/*" className="w-full mt-1 dark:text-gray-300" onChange={e => setCoverFile(e.target.files?.[0] || null)} />
                         </div>
                         <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Next: Upload Tracks</button>

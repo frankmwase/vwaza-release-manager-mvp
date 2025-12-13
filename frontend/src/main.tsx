@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import ArtistDashboard from './pages/ArtistDashboard';
 import ReleaseWizard from './pages/ReleaseWizard';
+import ReleaseDetails from './pages/ReleaseDetails';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
@@ -28,6 +29,22 @@ const router = createBrowserRouter([
   },
   {
     path: '/artist/new',
+    element: (
+      <ProtectedRoute role="ARTIST">
+        <ReleaseWizard />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/artist/release/:id',
+    element: (
+      <ProtectedRoute role="ARTIST">
+        <ReleaseDetails />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/artist/release/:id/edit',
     element: (
       <ProtectedRoute role="ARTIST">
         <ReleaseWizard />
