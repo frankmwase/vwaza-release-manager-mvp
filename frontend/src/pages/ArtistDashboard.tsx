@@ -80,10 +80,10 @@ export default function ArtistDashboard() {
                 </div>
             </nav>
 
-            <main className="flex-1 p-6 overflow-hidden flex flex-col">
+            <main className="flex-1 p-6 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-900">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-semibold">My Library</h2>
-                    <NavLink to="/artist/new" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 shadow-md transition-transform hover:scale-105">
+                    <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">My Library</h2>
+                    <NavLink to="/artist/new" className="bg-violet-600 text-white px-6 py-2 rounded-full font-bold hover:bg-violet-700 shadow-lg shadow-violet-500/30 transition-all hover:scale-105">
                         + New Release
                     </NavLink>
                 </div>
@@ -102,9 +102,17 @@ export default function ArtistDashboard() {
                                 layout
                                 initial={false}
                                 onClick={() => !isActive && setActiveStatus(status)}
+                                animate={{
+                                    flex: isActive ? 1 : 0,
+                                    width: isActive ? "auto" : 260,
+                                    opacity: isActive ? 1 : 0.6,
+                                    scale: isActive ? 1 : 0.95,
+                                    filter: isActive ? 'grayscale(0%)' : 'grayscale(40%)'
+                                }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 className={cn(
-                                    "relative transition-all duration-500 ease-in-out",
-                                    isActive ? "flex-1 min-w-[300px]" : "w-64 flex-none cursor-pointer hover:scale-105"
+                                    "relative rounded-2xl p-4 transition-all duration-300",
+                                    isActive ? "shadow-xl bg-white dark:bg-gray-800 ring-1 ring-violet-500/20" : "cursor-pointer hover:opacity-80 bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 hover:scale-105"
                                 )}
                             >
                                 <motion.h3 layout="position" className="text-lg font-bold mb-4 flex items-center gap-2">

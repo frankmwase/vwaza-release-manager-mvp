@@ -75,7 +75,7 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col font-sans">
+        <div className="min-h-screen bg-slate-100 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col font-sans">
             {/* Navbar */}
             <nav className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center z-10">
                 <div className="flex items-center gap-3">
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                                 <div className="space-y-4 mb-8 max-h-60 overflow-y-auto custom-scrollbar">
                                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Tracks</h3>
                                     {selectedRelease.tracks?.map((t: any) => (
-                                        <div key={t.id} className="bg-gray-50 dark:bg-gray-750 p-3 rounded-lg flex items-center justify-between group hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
+                                        <div key={t.id} className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex items-center justify-between transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
                                             <span className="font-medium text-sm">{t.title}</span>
                                             <audio controls src={getMediaUrl(t.audio_url)} className="h-8 w-32" />
                                         </div>
