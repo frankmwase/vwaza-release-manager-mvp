@@ -14,6 +14,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         delete (headers as any)['Content-Type'];
     }
 
+    // If no body is provided, do not send Content-Type: application/json
+    // This prevents Fastify from throwing 'FST_ERR_CTP_EMPTY_JSON_BODY'
+    if (!options.body) {
+        delete (headers as any)['Content-Type'];
+    }
+
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
