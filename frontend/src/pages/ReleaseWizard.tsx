@@ -19,6 +19,7 @@ export default function ReleaseWizard() {
     const [tracks, setTracks] = useState<any[]>([]);
     const [uploadQueue, setUploadQueue] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [isCreatingDraft, setIsCreatingDraft] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const navigate = useNavigate();
 
@@ -66,7 +67,10 @@ export default function ReleaseWizard() {
             return;
         }
 
+        if (isCreatingDraft) return; // Prevent double submission
+
         try {
+            setIsCreatingDraft(true);
             let coverUrl = existingCoverUrl;
             if (coverFile) {
                 const fd = new FormData();
@@ -76,7 +80,9 @@ export default function ReleaseWizard() {
             }
 
             if (releaseId) {
+                // Already have a draft, just move to next step
                 setStep(2);
+                setIsCreatingDraft(false);
                 return;
             }
 
@@ -87,8 +93,10 @@ export default function ReleaseWizard() {
             });
             setReleaseId(res.id);
             setStep(2);
+            setIsCreatingDraft(false);
         } catch (err) {
             alert('Failed to create/update draft');
+            setIsCreatingDraft(false);
         }
     };
 
@@ -199,8 +207,8 @@ export default function ReleaseWizard() {
                                         type="button"
                                         onClick={() => handleGenreToggle(genre)}
                                         className={`px-4 py-2 rounded-lg text-sm font-medium transition ${selectedGenres.includes(genre)
-                                                ? 'bg-indigo-600 text-white shadow-md'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                            ? 'bg-indigo-600 text-white shadow-md'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                             }`}
                                     >
                                         {genre}
@@ -242,8 +250,12 @@ export default function ReleaseWizard() {
                             <button type="button" onClick={() => navigate('/artist')} className="px-6 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition">
                                 Cancel
                             </button>
-                            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition transform hover:-translate-y-0.5">
-                                Next: Upload Tracks →
+                            <button
+                                type="submit"
+                                disabled={isCreatingDraft}
+                                className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isCreatingDraft ? '⏳ Creating...' : 'Next: Upload Tracks →'}
                             </button>
                         </div>
                     </form>
@@ -253,8 +265,8 @@ export default function ReleaseWizard() {
                     <div className="space-y-6 text-gray-900 dark:text-white">
                         <div
                             className={`border-3 border-dashed rounded-xl p-12 text-center transition ${isDragging
-                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                                    : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50'
+                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                                : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50'
                                 }`}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
