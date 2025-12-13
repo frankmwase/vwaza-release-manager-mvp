@@ -1,0 +1,2 @@
+-- No schema change needed as genre is already TEXT/VARCHAR, but documenting the format
+-- Genres will be stored as comma-separated values, e.g., "Hip-Hop, R&B, Pop"
