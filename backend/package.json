@@ -9,8 +9,8 @@
     "migrate": "ts-node src/migrate.ts",
     "setup-db": "ts-node src/setup_db.ts",
     "test": "jest",
-    "test:unit": "jest --testPathPattern=__tests__/(models|services)",
-    "test:integration": "jest --testPathPattern=__tests__/integration",
+    "test:unit": "jest --testMatch \"**/__tests__/{models,services}/**/*.test.ts\"",
+    "test:integration": "jest --testMatch \"**/__tests__/integration/**/*.test.ts\"",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"
   },

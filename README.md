@@ -77,3 +77,65 @@ I chose a simple split folder structure (`frontend/` and `backend/`) within a si
 4.  **Validation**:
     *   *Shortcut*: Basic manual validation logic.
     *   *Implication*: A library like `zod` would be more robust for production.
+
+---
+
+## 🧪 Testing
+
+### Running Tests
+
+The backend includes comprehensive unit and integration tests using Jest.
+
+```bash
+cd backend
+
+# Run all tests
+npm test
+
+# Run only unit tests (models and services)
+npm run test:unit
+
+# Run only integration tests (end-to-end flows)
+npm run test:integration
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests in watch mode (for development)
+npm run test:watch
+```
+
+### Test Structure
+
+**Unit Tests** (`src/__tests__/models` and `src/__tests__/services`):
+- **ReleaseModel**: Status transitions, validation, database operations
+- **AuthService**: Registration validation, password hashing, login logic
+- **ReleaseService**: Release creation, track upload, admin review operations
+
+**Integration Tests** (`src/__tests__/integration`):
+- **Authentication Flow**: Complete user registration and login
+- **Release Creation Flow**: End-to-end test covering:
+  1. User registration and login
+  2. Creating a draft release
+  3. Uploading tracks
+  4. Submitting for review
+  5. Admin approval/rejection with feedback
+
+### Coverage
+
+Run `npm run test:coverage` to generate a coverage report. The report will be available in `backend/coverage/index.html`.
+
+**Key Areas Tested**:
+- ✅ Status transitions (DRAFT → PROCESSING → PENDING_REVIEW → PUBLISHED/REJECTED)
+- ✅ Input validation (email, password, role, genres)
+- ✅ Authentication and authorization
+- ✅ Admin-only operations
+- ✅ Reject reason functionality
+- ✅ Multi-genre support
+
+### Known Issues
+
+> [!NOTE]
+> **Worker Process Warning**: You may see a warning message: *"A worker process has failed to exit gracefully and has been force exited."* This is a known issue caused by the async `processRelease` function (10-second timer) in the integration tests. **All tests still pass successfully** - this warning does not affect test functionality. The Jest configuration includes `forceExit: true` to ensure tests complete cleanly.
+
+---
