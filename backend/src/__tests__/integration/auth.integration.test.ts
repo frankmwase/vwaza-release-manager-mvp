@@ -1,4 +1,4 @@
-gitimport request from 'supertest';
+import request from 'supertest';
 import { server } from '../../app';
 
 describe('Authentication Integration Tests', () => {
