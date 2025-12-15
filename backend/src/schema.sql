@@ -35,3 +35,10 @@ CREATE TABLE IF NOT EXISTS tracks (
 CREATE INDEX IF NOT EXISTS idx_releases_artist_id ON releases(artist_id);
 CREATE INDEX IF NOT EXISTS idx_releases_status ON releases(status);
 CREATE INDEX IF NOT EXISTS idx_tracks_release_id ON tracks(release_id);
+
+-- Additional indexes for analytics and complex queris
+CREATE INDEX IF NOT EXISTS idx_releases_created_at ON releases(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_releases_status_created_at ON releases(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_releases_artist_status ON releases(artist_id, status);
