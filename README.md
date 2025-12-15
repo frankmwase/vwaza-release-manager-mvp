@@ -2,7 +2,7 @@
 
 A music distribution platform MVP connecting artists with admin reviewers.
 
-## 🚀 Quick Start (Local Development)
+## Quick Start (Local Development)
 
 ### Prerequisites
 -   Node.js (v18+)
@@ -37,7 +37,7 @@ I have provided an automated setup script to install dependencies and initialize
 
 ---
 
-## 🏗️ Architecture Decisions
+## Architecture Decisions
 
 ### Structure: Monorepo-ish
 I chose a simple split folder structure (`frontend/` and `backend/`) within a single root.
@@ -60,7 +60,7 @@ I chose a simple split folder structure (`frontend/` and `backend/`) within a si
 
 ---
 
-## ⚖️ Trade-offs & Shortcuts
+## Trade-offs & Shortcuts
 
 1.  **Database Access**:
     *   *Shortcut*: Used `pg` driver with raw SQL queries instead of an ORM (Prisma/TypeORM).
@@ -80,7 +80,7 @@ I chose a simple split folder structure (`frontend/` and `backend/`) within a si
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 
@@ -126,12 +126,12 @@ npm run test:watch
 Run `npm run test:coverage` to generate a coverage report. The report will be available in `backend/coverage/index.html`.
 
 **Key Areas Tested**:
-- ✅ Status transitions (DRAFT → PROCESSING → PENDING_REVIEW → PUBLISHED/REJECTED)
-- ✅ Input validation (email, password, role, genres)
-- ✅ Authentication and authorization
-- ✅ Admin-only operations
-- ✅ Reject reason functionality
-- ✅ Multi-genre support
+- Status transitions (DRAFT → PROCESSING → PENDING_REVIEW → PUBLISHED/REJECTED)
+- Input validation (email, password, role, genres)
+- Authentication and authorization
+- Admin-only operations
+- Reject reason functionality
+- Multi-genre support
 
 ### Known Issues
 

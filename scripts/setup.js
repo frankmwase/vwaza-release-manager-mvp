@@ -20,24 +20,24 @@ console.log('--- Vwaza MVP Setup ---');
 
 // 1. Check Env
 if (!fs.existsSync(path.join(backendDir, '.env'))) {
-    console.warn('\n⚠️  WARNING: backend/.env file not found!');
+    console.warn('\n  WARNING: backend/.env file not found!');
     console.warn('   Please create one based on .env.example (if available) or documentation.');
     // We don't exit here, just warn, as they might have set it up manually.
 }
 
 // 2. Install Dependencies
-console.log('\n📦 Installing Root Dependencies (concurrently)...');
+console.log('\n Installing Root Dependencies (concurrently)...');
 run('npm install', rootDir);
 
-console.log('\n📦 Installing Backend Dependencies...');
+console.log('\n Installing Backend Dependencies...');
 run('npm install', backendDir);
 
-console.log('\n📦 Installing Frontend Dependencies...');
+console.log('\n Installing Frontend Dependencies...');
 run('npm install', frontendDir);
 
 // 3. Setup Database
-console.log('\n🗄️  Initializing Database...');
+console.log('\n  Initializing Database...');
 run('npm run setup-db', backendDir);
 run('npm run migrate', backendDir);
 
-console.log('\n✅ Setup Complete! Run "npm run dev" to start the project.');
+console.log('\n Setup Complete! Run "npm run dev" to start the project.');
