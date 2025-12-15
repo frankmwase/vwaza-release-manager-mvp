@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { apiFetch, getMediaUrl } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,9 +86,25 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-slate-100 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col font-sans">
             {/* Navbar */}
             <nav className="bg-white dark:bg-gray-800 shadow-sm p-4 flex justify-between items-center z-10">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
-                    <h1 className="text-xl font-bold tracking-tight">Vwaza Admin</h1>
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
+                        <h1 className="text-xl font-bold tracking-tight">Vwaza Admin</h1>
+                    </div>
+                    <div className="flex gap-2">
+                        <Link
+                            to="/admin"
+                            className="text-sm font-medium text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 transition"
+                        >
+                            Dashboard
+                        </Link>
+                        <Link
+                            to="/admin/analytics"
+                            className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                        >
+                            Analytics
+                        </Link>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-gray-500">Admin Mode</span>

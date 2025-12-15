@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiFetch } from '../lib/api';
+import React, { createContext, useContext, useState } from 'react';
 
 interface User {
     id: number;
@@ -18,16 +17,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-
-    useEffect(() => {
-        //TODO: localStorage too or fetch /me
+    const [user, setUser] = useState<User | null>(() => {
         const storedUser = localStorage.getItem('user');
-        if (token && storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
     const login = (newToken: string, newUser: User) => {
         setToken(newToken);

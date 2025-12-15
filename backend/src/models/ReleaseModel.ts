@@ -9,9 +9,10 @@ export class ReleaseModel {
         if (filters.artistId) {
             query += ' WHERE artist_id = $1';
             params.push(filters.artistId);
-        } else {
-            query += ' ORDER BY created_at DESC';
         }
+
+        // Sorting by created_at for consistent results and index usage
+        query += ' ORDER BY created_at DESC';
 
         const result = await db.query(query, params);
         return result.rows;

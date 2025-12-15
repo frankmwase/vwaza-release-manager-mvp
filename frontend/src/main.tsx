@@ -9,6 +9,7 @@ import ArtistDashboard from './pages/ArtistDashboard';
 import ReleaseWizard from './pages/ReleaseWizard';
 import ReleaseDetails from './pages/ReleaseDetails';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAnalytics from './pages/AdminAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
@@ -58,6 +59,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute role="ADMIN">
         <AdminDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/admin/analytics',
+    element: (
+      <ProtectedRoute role="ADMIN">
+        <AdminAnalytics />
       </ProtectedRoute>
     ),
   },

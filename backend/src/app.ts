@@ -9,6 +9,7 @@ import rateLimit from '@fastify/rate-limit';
 import { db } from './db';
 import { authRoutes } from './routes/auth';
 import { releaseRoutes } from './routes/releases';
+import { analyticsRoutes } from './routes/analytics';
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 dotenv.config();
@@ -73,7 +74,7 @@ server.get<{ Params: { filename: string }, Querystring: { token?: string } }>('/
         return reply.status(400).send({ message: 'Invalid filename' });
     }
 
- 
+
     // This route is only for local dev fallback or if storage provider mimics fs.
     return reply.sendFile(filename, path.join(__dirname, '../uploads'));
 });
@@ -88,6 +89,7 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
 
 server.register(authRoutes);
 server.register(releaseRoutes);
+server.register(analyticsRoutes);
 
 server.get('/health', async (request, reply) => {
     try {
