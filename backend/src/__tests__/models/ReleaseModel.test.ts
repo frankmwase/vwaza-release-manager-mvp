@@ -133,7 +133,7 @@ describe('ReleaseModel', () => {
             const result = await ReleaseModel.findAll({ artistId: 1 });
 
             expect(db.query).toHaveBeenCalledWith(
-                'SELECT * FROM releases WHERE artist_id = $1',
+                'SELECT * FROM releases WHERE artist_id = $1 ORDER BY created_at DESC',
                 [1]
             );
             expect(result).toEqual(mockReleases);
