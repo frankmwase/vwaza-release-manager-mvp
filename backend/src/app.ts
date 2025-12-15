@@ -101,4 +101,9 @@ server.get('/health', async (request, reply) => {
     }
 });
 
+// Graceful shutdown
+server.addHook('onClose', async (instance) => {
+    await db.end();
+});
+
 export { server };
