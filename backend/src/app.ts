@@ -8,8 +8,8 @@ import fastifyStatic from '@fastify/static';
 import rateLimit from '@fastify/rate-limit';
 import { db } from './db';
 import { authRoutes } from './routes/auth';
-import { releaseRoutes } from './routes/releases';
-import { analyticsRoutes } from './routes/analytics';
+import { itemRoutes } from './routes/items';
+
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 dotenv.config();
@@ -88,8 +88,8 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
 });
 
 server.register(authRoutes);
-server.register(releaseRoutes);
-server.register(analyticsRoutes);
+server.register(itemRoutes);
+
 
 server.get('/health', async (request, reply) => {
     try {

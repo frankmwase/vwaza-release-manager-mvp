@@ -7,7 +7,6 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isRegister, setIsRegister] = useState(false);
-    const [role, setRole] = useState<'ARTIST' | 'ADMIN'>('ARTIST');
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -18,7 +17,7 @@ export default function Login() {
 
         try {
             const endpoint = isRegister ? '/register' : '/login';
-            const body = { email, password, ...(isRegister ? { role } : {}) };
+            const body = { email, password };
 
             const data = await apiFetch(endpoint, {
                 method: 'POST',
@@ -27,7 +26,7 @@ export default function Login() {
             });
 
             login(data.token, data.user);
-            navigate(data.user.role === 'ADMIN' ? '/admin' : '/artist');
+            navigate('/demo');
         } catch (err: any) {
             setError(err.message);
         }
@@ -64,19 +63,7 @@ export default function Login() {
                         />
                     </div>
 
-                    {isRegister && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-                            <select
-                                value={role}
-                                onChange={(e) => setRole(e.target.value as any)}
-                                className="mt-1 block w-full rounded border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option value="ARTIST">Artist</option>
-                                <option value="ADMIN">Admin</option>
-                            </select>
-                        </div>
-                    )}
+
 
                     <button
                         type="submit"

@@ -89,7 +89,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">V</div>
-                        <h1 className="text-xl font-bold tracking-tight">Vwaza Admin</h1>
+                        <h1 className="text-xl font-bold tracking-tight">Solitaire Admin</h1>
                     </div>
                     <div className="flex gap-2">
                         <Link

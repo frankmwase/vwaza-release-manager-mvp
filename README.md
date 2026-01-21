@@ -1,6 +1,6 @@
-# Vwaza MVP
+# React-Fastify-Starter (Solitaire Stack)
 
-A music distribution platform MVP connecting artists with admin reviewers.
+A high-performance full-stack starter kit featuring "Solitaire" style Card UI and Kanban Board patterns.
 
 ## Quick Start (Local Development)
 
@@ -18,12 +18,10 @@ I have provided an automated setup script to install dependencies and initialize
         DATABASE_URL=postgres://postgres:password@localhost:5432/vwaza_mvp
         JWT_SECRET=supersecretlengthykey
         PORT=3000
-        CLOUDINARY_URL=cloudinary://<cloudinary_api_key>:<cloudinary_api_secret>@<cloudinary_api_name>
-
+        CLOUDINARY_URL=cloudinary://<key>:<secret>@<cloud_name>
         ```
         *(Adjust `postgres:password` to your local DB credentials)*.
-        
-        *(Adjust `cloudinary://<cloudinary_api_key>:<cloudinary_api_secret>@<cloudinary_api_name>` for your cloudinary link)*.
+        *(Cloudinary is optional if you remove image upload features)*.
 3.  **Run Setup**:
     ```bash
     npm run setup

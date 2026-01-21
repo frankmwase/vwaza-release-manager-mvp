@@ -73,7 +73,7 @@ export default function ArtistDashboard() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col">
             <nav className="bg-white dark:bg-gray-800 shadow p-4 flex justify-between items-center z-10 relative">
-                <h1 className="text-xl font-bold">Vwaza Artist</h1>
+                <h1 className="text-xl font-bold">Solitaire User</h1>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-gray-500">{user?.email}</span>
                     <button onClick={logout} className="text-red-600 hover:text-red-800">Logout</button>

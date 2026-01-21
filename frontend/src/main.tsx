@@ -5,71 +5,36 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Login from './pages/Login';
-import ArtistDashboard from './pages/ArtistDashboard';
-import ReleaseWizard from './pages/ReleaseWizard';
-import ReleaseDetails from './pages/ReleaseDetails';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminAnalytics from './pages/AdminAnalytics';
+import DemoDashboard from './pages/DemoDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to="/demo" replace />,
   },
   {
     path: '/login',
     element: <Login />,
   },
   {
-    path: '/artist',
+    path: '/demo',
     element: (
-      <ProtectedRoute role="ARTIST">
-        <ArtistDashboard />
+      <ProtectedRoute>
+        <DemoDashboard />
       </ProtectedRoute>
     ),
   },
+  // Fallback for old routes to redirect to demo for now
   {
-    path: '/artist/new',
-    element: (
-      <ProtectedRoute role="ARTIST">
-        <ReleaseWizard />
-      </ProtectedRoute>
-    )
+    path: '/artist/*',
+    element: <Navigate to="/demo" replace />,
   },
   {
-    path: '/artist/release/:id',
-    element: (
-      <ProtectedRoute role="ARTIST">
-        <ReleaseDetails />
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: '/artist/release/:id/edit',
-    element: (
-      <ProtectedRoute role="ARTIST">
-        <ReleaseWizard />
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: '/admin',
-    element: (
-      <ProtectedRoute role="ADMIN">
-        <AdminDashboard />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/admin/analytics',
-    element: (
-      <ProtectedRoute role="ADMIN">
-        <AdminAnalytics />
-      </ProtectedRoute>
-    ),
-  },
+    path: '/admin/*',
+    element: <Navigate to="/demo" replace />,
+  }
 ]);
 
 createRoot(document.getElementById('root')!).render(
